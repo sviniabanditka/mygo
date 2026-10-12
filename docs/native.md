@@ -168,6 +168,11 @@ mygo.Screen.OnDisplaysChanged(func() { /* rearrange windows */ })
 of a built-in display, and whether a connected display has one: a panel
 that drops from the notch hangs below that rectangle
 (`examples/notch-screen-notch`).
+
+`mygo.App.OnGlobalPointer` reports the pointer's position as it moves
+anywhere on the screen, over other apps too (macOS), while a listener is
+registered: a hover trigger at the notch or a screen edge
+(`examples/notch-pointer`).
 `DisplayMatching(rect)` returns the display a rectangle overlaps most, the
 one a window is on.
 

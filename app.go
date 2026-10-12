@@ -58,6 +58,7 @@ type Application struct {
 	onActivate        listeners[func(bool)]
 	onDidBecomeActive listeners[func()]
 	onDidResignActive listeners[func()]
+	onPointer         listeners[func(x, y int)]
 	onOpenURL         listeners[func(string)]
 	onOpenFile        listeners[func(string)]
 	onWindowCreated   listeners[func(*Window)]
@@ -454,6 +455,25 @@ func (a *Application) OnDidResignActive(fn func()) (off func()) {
 	return a.onDidResignActive.add(fn, false)
 }
 
+// OnGlobalPointer is called with the pointer's position on the screen, in
+// the coordinates of Display.Bounds, as it moves anywhere: in the app's
+// windows and over other apps' (macOS). The system watches the pointer
+// only while a listener is registered: a hover trigger near the notch or
+// a screen edge. Not every position is reported, and no permission is
+// needed for it.
+func (a *Application) OnGlobalPointer(fn func(x, y int)) (off func()) {
+	remove := a.onPointer.add(fn, false)
+	if a.onPointer.len() == 1 {
+		onMain(func() { backend().App().WatchPointer(true) })
+	}
+	return func() {
+		remove()
+		if a.onPointer.len() == 0 {
+			onMain(func() { backend().App().WatchPointer(false) })
+		}
+	}
+}
+
 // OnOpenURL is called when the application is asked to open a URL of a
 // scheme it handles: one listed in urlSchemes in mygo.config.ts or registered
 // with RegisterURLScheme. Register it before Run to receive the URL the app
@@ -594,3 +614,8 @@ func (appHandler) DisplaysChanged()              { Screen.changed() }
 func (appHandler) PowerEvent(event string)       { Power.event(event) }
 func (appHandler) HotkeyPressed(id int)          { GlobalShortcut.pressed(id) }
 func (appHandler) NotificationClicked(id string) { notificationClicked(id) }
+func (appHandler) PointerMoved(p platform.Point) {
+	for _, fn := range App.onPointer.snapshot() {
+		fn(p.X, p.Y)
+	}
+}

@@ -134,6 +134,9 @@ type AppHandler interface {
 	PowerEvent(event string)
 	HotkeyPressed(id int)
 	NotificationClicked(id string)
+	// PointerMoved reports the pointer's position on the screen while
+	// AppController.WatchPointer is on, in the app and outside it.
+	PointerMoved(p Point)
 }
 
 // AppController exposes application level native features.
@@ -171,6 +174,9 @@ type AppController interface {
 	// is false for a plain executable (e.g. `go run`). Safe to call from
 	// any goroutine, before Init too.
 	Package() (info PackageInfo, ok bool)
+	// WatchPointer starts or stops AppHandler.PointerMoved reports of the
+	// pointer's position, in the app's windows and over other apps'.
+	WatchPointer(on bool)
 }
 
 // PackageInfo is metadata of a packaged application.
