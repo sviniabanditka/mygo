@@ -61,10 +61,18 @@ type FlyoutOptions struct {
 	// item of the icon opens it there, in the middle of the primary
 	// display's work area.
 	Tray *Tray
+	// Screen anchors the flyout to a rectangle of the screen instead, with
+	// neither a Parent nor a Tray: Anchor is then in screen coordinates,
+	// as Display.Bounds, and the flyout is placed in the bounds of the
+	// display Anchor is on, the menu bar included, not in its work area.
+	// It floats above the windows of other apps and shows on every
+	// Space: a panel that hangs from the top edge of a display.
+	Screen bool
 	// Anchor is the rectangle the flyout is placed against, in DIPs
 	// relative to the parent's content area: the box of the element
 	// that opens it, as ui.Element.Bounds gives it, or a point (a
-	// rectangle of zero size), such as the pointer's.
+	// rectangle of zero size), such as the pointer's. With Screen, it is
+	// in screen coordinates.
 	Anchor Rectangle
 	// Placement is where the flyout goes from Anchor (default
 	// PlacementBottomStart). Where the display's work area has no room
@@ -134,8 +142,12 @@ type FlyoutOptions struct {
 // page a background, or the native UI's root one. Like NewWindow, it must
 // be called after the application is ready.
 func NewFlyout(opts FlyoutOptions) *Window {
-	if (opts.Parent == nil) == (opts.Tray == nil) {
-		panic("mygo: NewFlyout needs a Parent or a Tray")
+	if opts.Screen {
+		if opts.Parent != nil || opts.Tray != nil {
+			panic("mygo: NewFlyout: a Screen flyout has neither a Parent nor a Tray")
+		}
+	} else if (opts.Parent == nil) == (opts.Tray == nil) {
+		panic("mygo: NewFlyout needs a Parent, a Tray or Screen")
 	}
 	fo, err := opts.platform()
 	if err != nil {
@@ -175,6 +187,7 @@ func (o *FlyoutOptions) platform() (*platform.Flyout, error) {
 	}
 	return &platform.Flyout{
 		Anchor:    platform.Rect(o.Anchor),
+		Screen:    o.Screen,
 		Side:      p.side,
 		Align:     p.align,
 		Gap:       o.Gap,

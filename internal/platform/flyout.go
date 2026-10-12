@@ -12,6 +12,11 @@ type Flyout struct {
 	// anchor, on the screen. Where they are empty, it goes in the middle
 	// of the primary display's work area.
 	Tray Tray
+	// Screen places the flyout against Anchor in screen coordinates, in
+	// the bounds of the display Anchor is on, with no parent and no tray:
+	// a panel that hangs from the top edge of a display. It floats above
+	// the windows of other apps and shows on every Space.
+	Screen bool
 	// Side is where the flyout goes from Anchor, and Align how it lines
 	// up with it along that side.
 	Side  Side

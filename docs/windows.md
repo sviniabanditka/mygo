@@ -193,6 +193,13 @@ stays above its parent, follows it as it moves and closes with it.
 `SetAnchor` places it against another rectangle, and `SetSize` resizes it
 where it goes; `IsFlyout` tells a flyout from other windows.
 
+With `Screen`, a flyout has neither a parent nor a tray: `Anchor` is a
+rectangle of the screen, in the coordinates of `Display.Bounds`, and the
+flyout is placed against it in the bounds of that display, the menu bar
+included, not in its work area. It floats above the windows of other apps
+and shows on every Space, as a panel that hangs from the top edge of a
+display (`examples/notch-screen-flyout`).
+
 With `Focusable`, a flyout takes the keyboard as it shows and closes as a
 menu does when the user presses outside it, another window takes the
 keyboard or the app is deactivated. `OnClose` listeners hear it and may

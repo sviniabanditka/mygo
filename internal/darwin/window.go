@@ -220,6 +220,9 @@ func (w *window) createFlyout() {
 		// Over the windows of other apps, as the menus of the menu bar.
 		send(w.win, "setLevel:", nsPopUpMenuWindowLevel)
 	}
+	if w.flyout.Screen {
+		w.setupScreenFlyout()
+	}
 	w.fillWindow(content)
 	w.register()
 	w.PlaceFlyout(w.flyout, w.flyoutSize)
@@ -290,6 +293,10 @@ func (w *window) PlaceFlyout(f platform.Flyout, size platform.Size) {
 	}
 	displays := screen{}.Displays()
 	anchor := f.Anchor
+	if f.Screen {
+		w.placeScreenFlyout(f, size, displays)
+		return
+	}
 	if t, ok := f.Tray.(*tray); ok {
 		if anchor = t.Bounds(); anchor.Width == 0 || anchor.Height == 0 {
 			r := platform.Centered(size, platform.PrimaryWorkArea(displays))
