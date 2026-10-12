@@ -43,6 +43,10 @@ type WebViewOptions struct {
 	// Transparent shows what the window's view paints under the web view
 	// through the transparent parts of its page.
 	Transparent bool
+	// Native is the configuration a window.open() handed over
+	// (WindowOpenRequest.Native); the web view then shows that new page.
+	// notch: web view hooks.
+	Native uintptr
 }
 
 // errNoContent is returned by NewWebView for windows showing a page.
@@ -82,6 +86,7 @@ func (w *Window) newWebView(opts WebViewOptions, bg *background) (*WebView, erro
 	pw.pg = &Page{pw}
 	pw.resetPage()
 	popts := pw.platformOptions(&WindowOptions{Page: opts.Page, Transparent: opts.Transparent})
+	popts.Native = opts.Native
 	popts.BackgroundColor = pw.backgroundColor()
 	if opts.Transparent {
 		pw.background = nil
@@ -105,6 +110,19 @@ func (w *Window) newWebView(opts WebViewOptions, bg *background) (*WebView, erro
 		}
 	}
 	return v, nil
+}
+
+// NativeHandle returns the native web view: a WKWebView on macOS, 0
+// elsewhere or once destroyed. notch: web view hooks.
+func (v *WebView) NativeHandle() uintptr {
+	return onMainValue(func() uintptr {
+		if n, ok := v.w.native.(*webViewNative); ok {
+			if h, ok := n.web.(interface{ WebViewHandle() uintptr }); ok {
+				return h.WebViewHandle()
+			}
+		}
+		return 0
+	})
 }
 
 // Page returns the web view's page.

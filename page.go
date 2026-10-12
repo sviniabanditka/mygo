@@ -45,4 +45,11 @@ type PageOptions struct {
 	ZoomFactor float64
 	// UserAgent overrides the user agent string.
 	UserAgent string
+
+	// Configure runs on the page's native configuration right before the
+	// web engine makes the page with it: a WKWebViewConfiguration on
+	// macOS, which an app gives a data store or a web extension
+	// controller this way. Main thread. Other platforms ignore it.
+	// notch: web view hooks.
+	Configure func(native uintptr)
 }

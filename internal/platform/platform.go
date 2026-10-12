@@ -255,6 +255,10 @@ type WindowOptions struct {
 	// Native carries backend specific state, e.g. the WKWebViewConfiguration
 	// WebKit hands us for window.open().
 	Native uintptr
+	// Configure runs on the web view's native configuration (a
+	// WKWebViewConfiguration on macOS) right before the web view is made
+	// with it. notch: web view hooks.
+	Configure func(native uintptr)
 
 	// Surface creates the window with a Surface, which content MyGo draws
 	// itself fills, instead of a webview: Window.Surface returns it, the

@@ -219,6 +219,7 @@ type Window struct {
 
 	mu                sync.Mutex
 	openHandler       func(WindowOpenRequest) *WindowOptions
+	webOpenHandler    func(WindowOpenRequest) *WebView
 	permissionHandler func(PermissionRequest) bool
 	pageCtx           context.Context
 	pageCancel        context.CancelFunc
@@ -282,6 +283,10 @@ type WindowOpenRequest struct {
 	// Width and Height requested through window.open() features; 0 when
 	// not specified.
 	Width, Height int
+	// Native is the configuration the web engine hands over for the new
+	// page (a WKWebViewConfiguration on macOS), which a web view made for
+	// it must use: WebViewOptions.Native. notch: web view hooks.
+	Native uintptr
 }
 
 var windows struct {
@@ -473,6 +478,7 @@ func (w *Window) platformOptions(o *WindowOptions) *platform.WindowOptions {
 	if o.Parent != nil && o.Parent.native != nil {
 		p.Parent = o.Parent.native
 	}
+	p.Configure = po.Configure
 	p.UserScripts = []platform.UserScript{{Source: w.bridgeScript()}}
 	if po.PreloadScript != "" {
 		p.UserScripts = append(p.UserScripts, platform.UserScript{Source: po.PreloadScript})
@@ -1242,6 +1248,17 @@ func (p *Page) SetWindowOpenHandler(fn func(req WindowOpenRequest) *WindowOption
 	p.w.mu.Unlock()
 }
 
+// SetWebViewOpenHandler decides what happens on window.open() and clicks on
+// target="_blank" links in a page, as SetWindowOpenHandler does, but opens
+// the new page in a web view the handler makes with
+// WebViewOptions.Native = req.Native, as a browser opens a tab: nil denies
+// it. It takes precedence over SetWindowOpenHandler. notch: web view hooks.
+func (p *Page) SetWebViewOpenHandler(fn func(req WindowOpenRequest) *WebView) {
+	p.w.mu.Lock()
+	p.w.webOpenHandler = fn
+	p.w.mu.Unlock()
+}
+
 // resetPage starts a new page context; the previous one is canceled.
 func (w *Window) resetPage() {
 	ctx := context.WithValue(context.WithValue(context.Background(), callerKey{}, w.top()), pageKey{}, w.pg)
@@ -1613,7 +1630,22 @@ func (h *windowHandler) NewWindow(req platform.NewWindowRequest) platform.Window
 	h.w.mu.Lock()
 	handler := h.w.openHandler
 	h.w.mu.Unlock()
-	r := WindowOpenRequest{URL: req.URL, FrameName: req.FrameName, Width: req.Width, Height: req.Height}
+	r := WindowOpenRequest{URL: req.URL, FrameName: req.FrameName, Width: req.Width, Height: req.Height, Native: req.Native}
+	h.w.mu.Lock()
+	webHandler := h.w.webOpenHandler
+	h.w.mu.Unlock()
+	if webHandler != nil {
+		v := webHandler(r)
+		if v == nil {
+			return nil
+		}
+		if n, ok := v.w.native.(*webViewNative); ok {
+			if pw, ok := n.web.(platform.Window); ok {
+				return pw
+			}
+		}
+		return nil
+	}
 	if handler == nil {
 		if u, err := url.Parse(req.URL); err == nil && (u.Scheme == "http" || u.Scheme == "https") {
 			go Shell.OpenExternal(req.URL)

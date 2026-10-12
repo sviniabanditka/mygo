@@ -8,3 +8,4 @@ This fork tracks upstream `egoist/mygo` tag `v0.4.5` on branch `notch-lab`. Ever
 | key-on-click | `notch: flyout key on click` | `FlyoutOptions.KeyOnClick`, `platform.Flyout.KeyOnClick` | R-MYGO-010 | `examples/notch-key-on-click` |
 | screen-notch | `notch: Screen.Notch` | `Screen.Notch()`, `platform.Screen.Notch` | R-MYGO-019 | `examples/notch-screen-notch` |
 | global-pointer | `notch: global pointer` | `App.OnGlobalPointer`, `platform.AppController.WatchPointer`, `platform.AppHandler.PointerMoved` | R-MYGO-020 | `examples/notch-pointer` |
+| webview-hooks | `notch: web view hooks` | `PageOptions.Configure`, `WebView.NativeHandle`, `Page.SetWebViewOpenHandler`, `WebViewOptions.Native`, `WindowOpenRequest.Native` | R-MYGO-030…037 (replaces them) | — |

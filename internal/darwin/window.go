@@ -353,6 +353,9 @@ func (w *window) createWebView(content NSRect) {
 		release(script)
 	}
 	send(cfg, "setUserContentController:", uintptr(w.ucc))
+	if o.Configure != nil {
+		o.Configure(uintptr(cfg))
+	}
 
 	w.web = msgInitRectID(send(class("MyGoWebView"), "alloc"), sel("initWithFrame:configuration:"), NSRect{Size: content.Size}, cfg)
 	release(cfg)
