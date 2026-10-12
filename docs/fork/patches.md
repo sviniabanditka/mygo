@@ -6,3 +6,4 @@ This fork tracks upstream `egoist/mygo` tag `v0.4.5` on branch `notch-lab`. Ever
 |---|---|---|---|---|
 | screen-flyout | `notch: screen flyout` | `FlyoutOptions.Screen`, `platform.Flyout.Screen` | R-MYGO-010 | `examples/notch-screen-flyout` |
 | key-on-click | `notch: flyout key on click` | `FlyoutOptions.KeyOnClick`, `platform.Flyout.KeyOnClick` | R-MYGO-010 | `examples/notch-key-on-click` |
+| screen-notch | `notch: Screen.Notch` | `Screen.Notch()`, `platform.Screen.Notch` | R-MYGO-019 | `examples/notch-screen-notch` |

@@ -705,6 +705,9 @@ type Display struct {
 type Screen interface {
 	Displays() []Display
 	CursorPoint() Point
+	// Notch returns the area of the camera housing at the top of a built-in
+	// display, in screen coordinates, and whether a display has one.
+	Notch() (Rect, bool)
 }
 
 // Theme reads and overrides the system appearance.

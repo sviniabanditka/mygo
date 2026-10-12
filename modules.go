@@ -178,6 +178,22 @@ func (s *ScreenModule) CursorScreenPoint() Point {
 	return onMainValue(func() Point { return Point(backend().Screen().CursorPoint()) })
 }
 
+// Notch returns the area of the camera housing at the top of a built-in
+// display, in screen coordinates, and whether a connected display has one:
+// a panel that drops from it hangs below that rectangle. The result can
+// change with the displays (OnDisplaysChanged).
+func (s *ScreenModule) Notch() (Rectangle, bool) {
+	needsApp("Screen.Notch")
+	var r Rectangle
+	var ok bool
+	onMainValue(func() struct{} {
+		pr, pok := backend().Screen().Notch()
+		r, ok = Rectangle(pr), pok
+		return struct{}{}
+	})
+	return r, ok
+}
+
 // DisplayNearestPoint returns the display closest to p.
 func (s *ScreenModule) DisplayNearestPoint(p Point) Display {
 	needsApp("Screen.DisplayNearestPoint")

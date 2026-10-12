@@ -163,6 +163,11 @@ mygo.Screen.OnDisplaysChanged(func() { /* rearrange windows */ })
 ```
 
 `WorkArea` leaves out the menu bar, the Dock and taskbars.
+
+`mygo.Screen.Notch()` returns the area of the camera housing at the top
+of a built-in display, and whether a connected display has one: a panel
+that drops from the notch hangs below that rectangle
+(`examples/notch-screen-notch`).
 `DisplayMatching(rect)` returns the display a rectangle overlaps most, the
 one a window is on.
 
