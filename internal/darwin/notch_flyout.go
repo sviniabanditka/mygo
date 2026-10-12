@@ -57,6 +57,9 @@ func takesKey(f platform.Flyout) bool { return f.Focusable || f.KeyOnClick }
 // the app lands outside of, as a press in another app closes them: the
 // press's window is neither the flyout nor a window above it.
 func (b *Backend) closeKeyOnClickFlyouts(ev id) {
+	if send(b.app, "modalWindow") != 0 { // a dialog over the flyout (overFlyout)
+		return
+	}
 	pressed := b.byNSWindow[send(ev, "window")]
 	var outside []*window
 	for _, w := range b.byNSWindow {
@@ -77,6 +80,24 @@ func (b *Backend) closeKeyOnClickFlyouts(ev id) {
 	for _, w := range outside {
 		if !w.closed && w.h.ShouldClose() {
 			w.Close()
+		}
+	}
+}
+
+// notch: dialogs over flyouts.
+
+// overFlyout prepares an application modal panel or alert whose parent is
+// a flyout. A flyout does not show sheets: the sheet never appears and its
+// caller waits for ever. runModal puts the dialog at the modal panel
+// level, so the flyout goes down to the floating level while the dialog
+// shows, else a flyout above the menu bar hides it. It returns the
+// function that puts the flyout's level back.
+func overFlyout(parent *window) func() {
+	level := sendInt(parent.win, "level")
+	send(parent.win, "setLevel:", nsFloatingWindowLevel)
+	return func() {
+		if !parent.closed {
+			send(parent.win, "setLevel:", uintptr(level))
 		}
 	}
 }

@@ -19,6 +19,10 @@ const nsModalResponseOK = 1
 // runPanel shows a panel or alert as a sheet of parent when possible, else
 // application modal, and calls done with the modal response.
 func runPanel(obj id, parent *window, sheetSel string, done func(resp int)) {
+	if parent != nil && parent.opts.Flyout != nil {
+		defer overFlyout(parent)()
+		parent = nil
+	}
 	if parent != nil && !parent.closed && parent.IsVisible() {
 		retain(obj)
 		blk := newBlock(func(_ objc.Block, resp int) {

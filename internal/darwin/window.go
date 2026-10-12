@@ -676,6 +676,9 @@ func (w *window) dismissFlyout() {
 	if w.closed || !takesKey(w.flyout) || !sendBool(w.win, "isVisible") {
 		return
 	}
+	if send(w.b.app, "modalWindow") != 0 { // notch: a dialog over the flyout (overFlyout)
+		return
+	}
 	for k := w.b.byNSWindow[send(w.b.app, "keyWindow")]; k != nil; k = k.parent {
 		if k == w {
 			return
