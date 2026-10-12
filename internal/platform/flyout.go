@@ -28,6 +28,11 @@ type Flyout struct {
 	// another window takes the keyboard. Others never take the keyboard
 	// and stay until closed.
 	Focusable bool
+	// KeyOnClick lets a flyout take the keyboard when the user presses in
+	// it, and not before: it shows without it, as one that is not
+	// Focusable, and closes as a Focusable one does when the user presses
+	// outside it or another window takes the keyboard it had.
+	KeyOnClick bool
 	// Popover shows the flyout in a popover of the system, which draws its
 	// background and an arrow pointing at the middle of Anchor, and places
 	// it (macOS); Align and Gap do not apply. Elsewhere it is ignored.

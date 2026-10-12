@@ -46,3 +46,37 @@ func displayBoundsFor(r platform.Rect, displays []platform.Display) platform.Rec
 	}
 	return platform.Rect{}
 }
+
+// notch: flyout key on click (platform.Flyout.KeyOnClick).
+
+// takesKey reports whether a flyout may hold the keyboard: as it shows
+// (Focusable) or once the user presses in it (KeyOnClick).
+func takesKey(f platform.Flyout) bool { return f.Focusable || f.KeyOnClick }
+
+// closeKeyOnClickFlyouts closes the visible KeyOnClick flyouts a press in
+// the app lands outside of, as a press in another app closes them: the
+// press's window is neither the flyout nor a window above it.
+func (b *Backend) closeKeyOnClickFlyouts(ev id) {
+	pressed := b.byNSWindow[send(ev, "window")]
+	var outside []*window
+	for _, w := range b.byNSWindow {
+		if w.opts.Flyout == nil || w.popover != 0 || !w.flyout.KeyOnClick || w.closed || !sendBool(w.win, "isVisible") {
+			continue
+		}
+		inside := false
+		for k := pressed; k != nil; k = k.parent {
+			if k == w {
+				inside = true
+				break
+			}
+		}
+		if !inside {
+			outside = append(outside, w)
+		}
+	}
+	for _, w := range outside {
+		if !w.closed && w.h.ShouldClose() {
+			w.Close()
+		}
+	}
+}

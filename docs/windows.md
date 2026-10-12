@@ -200,6 +200,12 @@ included, not in its work area. It floats above the windows of other apps
 and shows on every Space, as a panel that hangs from the top edge of a
 display (`examples/notch-screen-flyout`).
 
+With `KeyOnClick`, a flyout takes the keyboard when the user presses in
+it, and not as it shows: until then the keyboard stays where it was, in
+another app too. Once it has it, or when the user presses outside it, in
+the app or in another, it closes as a Focusable one does
+(`examples/notch-key-on-click`).
+
 With `Focusable`, a flyout takes the keyboard as it shows and closes as a
 menu does when the user presses outside it, another window takes the
 keyboard or the app is deactivated. `OnClose` listeners hear it and may

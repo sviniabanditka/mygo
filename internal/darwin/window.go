@@ -547,6 +547,9 @@ func (w *window) showFlyout(key bool) {
 		w.b.watchOutsideClicks()
 		send(w.win, "makeKeyAndOrderFront:", 0)
 	} else {
+		if w.flyout.KeyOnClick {
+			w.b.watchOutsideClicks()
+		}
 		send(w.win, "orderFront:", 0)
 	}
 	if p := w.parent; p != nil && !p.closed && send(w.win, "parentWindow") == 0 {
@@ -584,7 +587,7 @@ func (b *Backend) watchOutsideClicks() {
 	blk := newBlock(func(_ objc.Block, ev id) {
 		var open []*window
 		for _, w := range b.byNSWindow {
-			if w.opts.Flyout != nil && w.popover == 0 && w.flyout.Focusable && !w.closed && sendBool(w.win, "isVisible") {
+			if w.opts.Flyout != nil && w.popover == 0 && takesKey(w.flyout) && !w.closed && sendBool(w.win, "isVisible") {
 				open = append(open, w)
 			}
 		}
@@ -627,6 +630,7 @@ func (b *Backend) watchAnchorPresses() {
 			}
 		default: // a press, which ends any other
 			eatingPress = 0
+			b.closeKeyOnClickFlyouts(ev)
 			if w := b.flyoutAnchoredAt(ev); w != nil {
 				eatingPress = typ + 1
 				if w.h.ShouldClose() {
@@ -666,7 +670,7 @@ func (b *Backend) flyoutAnchoredAt(ev id) *window {
 // dismissFlyout closes a focusable flyout that lost the keyboard, as the
 // user closing it, unless it went to a flyout of its own.
 func (w *window) dismissFlyout() {
-	if w.closed || !w.flyout.Focusable || !sendBool(w.win, "isVisible") {
+	if w.closed || !takesKey(w.flyout) || !sendBool(w.win, "isVisible") {
 		return
 	}
 	for k := w.b.byNSWindow[send(w.b.app, "keyWindow")]; k != nil; k = k.parent {
@@ -1320,7 +1324,7 @@ func registerWindowClasses() {
 	classDef("MyGoFlyout", "NSPanel", nil, []objc.MethodDef{
 		method("canBecomeKeyWindow", func(self id, _ objc.SEL) bool {
 			w := theBackend.byNSWindow[self]
-			return w != nil && w.flyout.Focusable
+			return w != nil && (w.flyout.Focusable || w.flyout.KeyOnClick)
 		}),
 		method("canBecomeMainWindow", func(self id, _ objc.SEL) bool { return false }),
 		method("selectKeyViewFollowingView:", selectKeyView("MyGoFlyout", false)),

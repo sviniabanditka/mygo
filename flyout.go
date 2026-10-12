@@ -104,6 +104,15 @@ type FlyoutOptions struct {
 	// does not handle: no element or shortcut of native UI takes it, no
 	// handler of the page calls preventDefault.
 	Focusable bool
+	// KeyOnClick makes the flyout take the keyboard when the user presses
+	// in it, and not as it shows: until then the keyboard stays where it
+	// was, in another app too. Once it has it, or when the user presses
+	// outside it, the flyout closes as a Focusable one does: on a press
+	// outside it, in the app or in another, when another window takes
+	// the keyboard, or on an Escape its content leaves. A panel that
+	// drops over another app's window, which keeps typing until the user
+	// clicks a field of the panel.
+	KeyOnClick bool
 	// Hidden creates the flyout without showing it.
 	Hidden bool
 	// Shadow gives the flyout the system's window shadow (macOS,
@@ -186,13 +195,14 @@ func (o *FlyoutOptions) platform() (*platform.Flyout, error) {
 		return nil, fmt.Errorf("mygo: unknown flyout placement %q", o.Placement)
 	}
 	return &platform.Flyout{
-		Anchor:    platform.Rect(o.Anchor),
-		Screen:    o.Screen,
-		Side:      p.side,
-		Align:     p.align,
-		Gap:       o.Gap,
-		Focusable: o.Focusable,
-		Popover:   o.Popover,
+		Anchor:     platform.Rect(o.Anchor),
+		Screen:     o.Screen,
+		Side:       p.side,
+		Align:      p.align,
+		Gap:        o.Gap,
+		Focusable:  o.Focusable,
+		KeyOnClick: o.KeyOnClick,
+		Popover:    o.Popover,
 	}, nil
 }
 
