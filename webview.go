@@ -47,6 +47,11 @@ type WebViewOptions struct {
 	// (WindowOpenRequest.Native); the web view then shows that new page.
 	// notch: web view hooks.
 	Native uintptr
+	// KeepConfiguration shows Native's configuration as it is: no content
+	// controller, bridge or scripts of mygo's own go in. A browser's
+	// extension popup needs it so: WebKit carries the extension's messages
+	// to a page through its own configuration. notch: native configuration.
+	KeepConfiguration bool
 }
 
 // errNoContent is returned by NewWebView for windows showing a page.
@@ -87,6 +92,7 @@ func (w *Window) newWebView(opts WebViewOptions, bg *background) (*WebView, erro
 	pw.resetPage()
 	popts := pw.platformOptions(&WindowOptions{Page: opts.Page, Transparent: opts.Transparent})
 	popts.Native = opts.Native
+	popts.KeepNative = opts.KeepConfiguration
 	popts.BackgroundColor = pw.backgroundColor()
 	if opts.Transparent {
 		pw.background = nil

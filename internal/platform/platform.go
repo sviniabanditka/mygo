@@ -255,6 +255,9 @@ type WindowOptions struct {
 	// Native carries backend specific state, e.g. the WKWebViewConfiguration
 	// WebKit hands us for window.open().
 	Native uintptr
+	// KeepNative leaves Native's configuration as it is (no content
+	// controller of mygo's own). notch: native configuration.
+	KeepNative bool
 	// Configure runs on the web view's native configuration (a
 	// WKWebViewConfiguration on macOS) right before the web view is made
 	// with it. notch: web view hooks.

@@ -237,8 +237,10 @@ func (w *window) closeWebView() {
 			send(w.win, "makeFirstResponder:", uintptr(w.host.surface.view))
 		}
 		send(w.web, "removeObserver:forKeyPath:", uintptr(w.delegate), uintptr(nsString("title")))
-		send(w.ucc, "removeScriptMessageHandlerForName:", uintptr(nsString("mygo")))
-		send(w.ucc, "removeAllUserScripts")
+		if !w.keptUCC { // notch: native configuration
+			send(w.ucc, "removeScriptMessageHandlerForName:", uintptr(nsString("mygo")))
+			send(w.ucc, "removeAllUserScripts")
+		}
 		send(w.web, "stopLoading")
 		send(w.web, "setNavigationDelegate:", 0)
 		send(w.web, "setUIDelegate:", 0)

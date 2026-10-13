@@ -57,6 +57,7 @@ type window struct {
 	web      id
 	delegate id
 	ucc      id
+	keptUCC  bool // notch: native configuration; ucc is the configuration's own
 	effect   id
 	parent   *window
 	// flyout is how a flyout (WindowOptions.Flyout) was placed last, at
@@ -331,6 +332,13 @@ func (w *window) createWebView(content NSRect) {
 		send(prefs, "setElementFullscreenEnabled:", 1)
 	}
 
+	// notch: native configuration. A configuration to keep as it is keeps
+	// its content controller: no bridge, no scripts of mygo's own.
+	if o.Native != 0 && o.KeepNative {
+		w.ucc = retain(send(cfg, "userContentController"))
+		w.keptUCC = true
+		goto made
+	}
 	// Every window gets its own content controller so messages, scripts and
 	// the bridge configuration never leak between windows.
 	w.ucc = alloc("WKUserContentController")
@@ -353,6 +361,7 @@ func (w *window) createWebView(content NSRect) {
 		release(script)
 	}
 	send(cfg, "setUserContentController:", uintptr(w.ucc))
+made:
 	if o.Configure != nil {
 		o.Configure(uintptr(cfg))
 	}
@@ -398,8 +407,10 @@ func (w *window) cleanup() {
 	if w.trafficLights != nil {
 		send(w.win, "removeObserver:forKeyPath:", uintptr(w.delegate), uintptr(nsString("effectiveAppearance")))
 	}
-	send(w.ucc, "removeScriptMessageHandlerForName:", uintptr(nsString("mygo")))
-	send(w.ucc, "removeAllUserScripts")
+	if !w.keptUCC {
+		send(w.ucc, "removeScriptMessageHandlerForName:", uintptr(nsString("mygo")))
+		send(w.ucc, "removeAllUserScripts")
+	}
 	send(w.web, "stopLoading")
 	send(w.web, "setNavigationDelegate:", 0)
 	send(w.web, "setUIDelegate:", 0)
